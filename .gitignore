@@ -1,0 +1,18 @@
+# Working materials (assignment, plans, notes, raw data) – never committed
+_work/
+
+# Agent instructions
+CLAUDE.md
+.claude/
+
+# Data: employee data is treated as personal data; only synthetic fixtures are tracked
+*.csv
+!tests/fixtures/*.csv
+
+# Build / tooling
+node_modules/
+dist/
+coverage/
+.env*
+*.log
+.DS_Store
