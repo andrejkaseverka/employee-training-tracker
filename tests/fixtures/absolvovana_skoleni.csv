@@ -1,0 +1,25 @@
+id_zaznamu;id_zamestnance;zamestnanec;kod_skoleni;datum_absolvovani;platnost_do;poskytovatel;cena_kc;poznamka
+A001;D001;Testová Alena;BOZP-Z;2025-03-10;2027-03-10;Interní;0;
+A002;D001;Testová Alena;KYBER;2024-11-15;2025-11-15;Interní;0;
+A003;D001;Testová Alena;KYBER;15. 11. 2025;15. 11. 2026;Interní;0;"Poznámka na více øádkù;
+s oddìlovaèem a ""uvozovkami"""
+A004;D001;Testová Alena;PRV-POM;2022-05-01;2025-05-01;Èervený køíž;1 200,00;
+A005;D002;Zkušební Bohumil;bozp_z;2024-12-01;;Interní;zdarma;
+A006;D002;Zkušební Bohumil;KYBER;2025-09-20;2026-09-20;Interní;0;
+A006;D002;Zkušební Bohumil;KYBER;2025-09-20;2026-09-20;Interní;0;
+A007;D003;Vzorový Cyril;BOZP-Z;2025-06-01;2027-06-01;Interní;0;
+id_zaznamu;id_zamestnance;zamestnanec;kod_skoleni;datum_absolvovani;platnost_do;poskytovatel;cena_kc;poznamka
+A008;D003;Vzorový Cyril;KYBER;45901;2026-09-01;Interní;0;
+A009;D003;Vzorový Cyril;ZDVIH;2025-01-10;;TECHNIK S.R.O.;450,- Kè;
+A010;D003;Vzorový Cyril;PRV-POM;2024-02-01;2027-02-01;Èervený køíž;1 200,00;
+A011;D004;Ukázková Dana;BOZP-Z;2023-01-01;2025-01-01;Interní;0;
+A012;D004;Ukázková Dana;KYBER;1. 1. 1900;;Interní;0;
+A013;D006;Hlavní Františka;LEAD;2016-04-01;;Akademie;5 000,00;
+A014;D006;Hlavní Františka;BOZP-Z;2025-10-01;2027-10-01;Interní;0;
+A015;D006;Hlavní Františka;KYBER;2026-10-05;2027-10-05;Interní;0;
+A016;D006;Hlavní Františka;ANGL;2024-01-01;;Jazyková škola;-500;
+A017;D007;Odešlý Gustav;BOZP-Z;2024-03-01;2026-03-01;Interní;0;
+A018;D008;Odcházející Hana;BOZP-Z;2026-01-01;2028-01-01;Interní;0;
+A019;D008;Odcházející Hana;KYBER;2026-02-01;2027-02-01;Interní;0;
+A020;D999;Neznámý Èlovìk;KYBER;2026-01-01;2027-01-01;Interní;0;
+A021;D001;Testová Alena;KYB3R;2026-01-01;2027-01-01;Interní;0;
