@@ -79,6 +79,17 @@ describe('mapEmployees', () => {
       [4, 'unknown-manager'],
     ])
   })
+
+  it('reports an unknown manager on the kept row when the id is duplicated', () => {
+    const { issues } = mapEmployees([
+      row(2, { vedouci_email: 'nikdo@example.test' }),
+      row(3, { id_zamestnance: 'T002' }),
+    ])
+    expect(issues.map((issue) => [issue.row, issue.kind])).toEqual([
+      [3, 'duplicate-employee-id'],
+      [2, 'unknown-manager'],
+    ])
+  })
 })
 
 describe('overviewScope', () => {

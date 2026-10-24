@@ -81,4 +81,8 @@ describe('mapSessions', () => {
     expect(sessions[1]?.duplicateOf).toBe(first.values['id_terminu'])
     expect(kinds([row({}), row({})])).toEqual(['duplicate-session'])
   })
+
+  it('detects duplicates whose time is written differently', () => {
+    expect(kinds([row({ cas: '09:00-12:00' }), row({ cas: '9:00 - 12:00' })])).toEqual(['duplicate-session'])
+  })
 })

@@ -106,7 +106,12 @@ function reportUnknownManagers(
   issues: IssueCollector,
 ): void {
   const knownEmails = new Set([...employees.values()].map((employee) => employee.email))
-  const rowById = new Map(rows.map((source) => [field(source, 'id_zamestnance').toUpperCase(), source.row]))
+  // First occurrence wins, matching mapEmployees (later duplicates are dropped).
+  const rowById = new Map<string, number>()
+  for (const source of rows) {
+    const id = field(source, 'id_zamestnance').toUpperCase()
+    if (!rowById.has(id)) rowById.set(id, source.row)
+  }
   for (const employee of employees.values()) {
     if (employee.managerEmail !== null && !knownEmails.has(employee.managerEmail)) {
       issues.add(rowById.get(employee.id) ?? null, 'unknown-manager', 'flagged', 'vedouci_email')

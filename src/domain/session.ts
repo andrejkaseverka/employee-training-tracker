@@ -72,7 +72,8 @@ export function mapSessions(rows: readonly SourceRow[], catalog: Catalog): Sessi
     }
 
     const place = field(source, 'misto')
-    const identity = [code, date ?? field(source, 'datum'), field(source, 'cas'), comparisonKey(place)].join('|')
+    const timeKey = time === null ? field(source, 'cas') : `${time.start}-${time.end}`
+    const identity = [code, date ?? field(source, 'datum'), timeKey, comparisonKey(place)].join('|')
     const duplicateOf = firstByIdentity.get(identity) ?? null
     if (duplicateOf === null) firstByIdentity.set(identity, id)
     else issues.add(source.row, 'duplicate-session', 'flagged', 'id_terminu')
