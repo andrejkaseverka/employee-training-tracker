@@ -1,6 +1,5 @@
 import type { LocalDate } from '../../domain/config.ts'
-import type { UnassignedReason } from '../../domain/enrolment.ts'
-import { TRAINING_STATUSES, type TrainingStatus } from '../../domain/training-status.ts'
+import { STATUS_PRIORITY, type NeedStatus, type UnassignedReason } from '../../domain/enrolment.ts'
 import type { Catalog } from '../../domain/catalog.ts'
 import type { EmployeeOverview, TrainingOverview } from '../../use-cases/build-training-overview.ts'
 import type { EnrolmentPlan } from '../../use-cases/recommend-enrolments.ts'
@@ -16,13 +15,15 @@ export type Resolution =
   | { readonly kind: 'unassigned'; readonly reason: UnassignedReason }
   /** Requirement cannot be decided (missing department): nothing to book until the data is fixed. */
   | { readonly kind: 'check-data' }
+  /** Not in the enrolment plan at all; should not happen, shown instead of a misleading reason. */
+  | { readonly kind: 'not-planned' }
 
 export interface AttentionItem {
   readonly person: EmployeeOverview
   readonly code: string
   readonly trainingName: string
   /** Null when it is not even known whether the training is mandatory. */
-  readonly status: TrainingStatus | null
+  readonly status: NeedStatus | null
   readonly daysLeft: number | null
   readonly validUntil: LocalDate | null
   readonly resolution: Resolution
@@ -57,7 +58,7 @@ export function buildAttentionList(overview: TrainingOverview, plan: EnrolmentPl
         status: training.status,
         daysLeft: training.daysLeft,
         validUntil: training.validUntil,
-        resolution: resolutions.get(key(person.employee.id, training.code)) ?? { kind: 'check-data' },
+        resolution: resolutions.get(key(person.employee.id, training.code)) ?? { kind: 'not-planned' },
       })
     }
     for (const code of person.undeterminedRequirements) {
@@ -79,7 +80,7 @@ function key(employeeId: string, code: string): string {
   return `${employeeId}|${code}`
 }
 
-/** Status order (unknown requirement last), then fewest days left, then name. */
+/** Same priority as the enrolment allocation (unknown requirement last), then fewest days left, then name. */
 function byUrgency(a: AttentionItem, b: AttentionItem): number {
   return (
     statusRank(a.status) - statusRank(b.status) ||
@@ -90,6 +91,8 @@ function byUrgency(a: AttentionItem, b: AttentionItem): number {
   )
 }
 
-function statusRank(status: TrainingStatus | null): number {
-  return status === null ? TRAINING_STATUSES.length : TRAINING_STATUSES.indexOf(status)
+const UNKNOWN_REQUIREMENT_RANK = Math.max(...Object.values(STATUS_PRIORITY)) + 1
+
+function statusRank(status: NeedStatus | null): number {
+  return status === null ? UNKNOWN_REQUIREMENT_RANK : STATUS_PRIORITY[status]
 }

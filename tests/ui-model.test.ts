@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { evaluate, prepareData } from '../src/app/run-analysis.ts'
 import { DEFAULT_CONFIG } from '../src/domain/config.ts'
+import type { NeedStatus } from '../src/domain/enrolment.ts'
 import { buildAttentionList } from '../src/ui/model/attention.ts'
 import {
   ANY,
@@ -26,15 +27,25 @@ describe('attention list', () => {
 
   it('lists every training that is not valid plus requirements that cannot be decided', () => {
     const { expired, missing, expiring, undetermined } = overview.statusCounts
-    expect(items).toHaveLength(expired + missing + expiring + undetermined + 1)
+    const undecidable = overview.employees.flatMap((entry) => entry.undeterminedRequirements).length
+    expect(undecidable).toBeGreaterThan(0)
+    expect(items).toHaveLength(expired + missing + expiring + undetermined + undecidable)
   })
 
-  it('orders by urgency: expired, missing, expiring, then undecidable requirements', () => {
-    const statuses = items.map((item) => item.status)
-    expect(statuses).toEqual([...statuses].sort((a, b) => rank(a) - rank(b)))
-    expect(statuses.at(-1)).toBeNull()
-    const expiredDays = items.filter((item) => item.status === 'expired').map((item) => item.daysLeft ?? 0)
-    expect(expiredDays).toEqual([...expiredDays].sort((a, b) => a - b))
+  it('orders like the enrolment priority: missing, expired, expiring, undetermined, then undecidable requirements', () => {
+    const groups = items.map((item) => item.status).filter((status, index, all) => index === 0 || all[index - 1] !== status)
+    expect(groups).toEqual(URGENCY_ORDER.filter((status) => groups.includes(status)))
+    expect(groups).toEqual(expect.arrayContaining(['missing', 'expired', 'expiring', null]))
+    for (const status of ['expired', 'expiring'] as const) {
+      const daysLeft = items.filter((item) => item.status === status).map((item) => item.daysLeft ?? 0)
+      expect(daysLeft).toEqual([...daysLeft].sort((a, b) => a - b))
+    }
+  })
+
+  it('gives every training with a known status a recommendation from the plan', () => {
+    for (const item of items.filter((entry) => entry.status !== null)) {
+      expect(['assigned', 'unassigned']).toContain(item.resolution.kind)
+    }
   })
 
   it('joins each item with its recommended session or the reason why not', () => {
@@ -45,10 +56,8 @@ describe('attention list', () => {
   })
 })
 
-const RANK: Readonly<Record<string, number>> = { expired: 0, missing: 1, undetermined: 2, expiring: 3, valid: 4 }
-function rank(status: string | null): number {
-  return status === null ? Object.keys(RANK).length : (RANK[status] ?? 0)
-}
+// Assumption #18, written out on purpose instead of imported, so the test does not mirror the code.
+const URGENCY_ORDER: readonly (NeedStatus | null)[] = ['missing', 'expired', 'expiring', 'undetermined', null]
 
 describe('employee filters', () => {
   const ids = (person = EMPTY_PERSON_FILTER, training = EMPTY_TRAINING_FILTER): string[] =>

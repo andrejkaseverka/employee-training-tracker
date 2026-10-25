@@ -26,5 +26,7 @@ export function ResolutionText(props: {
       return <span className="text-red-800">{UNASSIGNED_LABELS[resolution.reason]}</span>
     case 'check-data':
       return <span className="text-purple-800">Doplnit útvar v evidenci – nelze určit, zda je školení povinné</span>
+    case 'not-planned':
+      return <span className="text-gray-600">Není v doporučení přihlášek – ověřit ručně</span>
   }
 }
