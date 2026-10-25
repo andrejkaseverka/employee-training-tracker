@@ -1,4 +1,4 @@
-import { useMemo, type ReactElement } from 'react'
+import { useId, useMemo, type ReactElement } from 'react'
 import { evaluate, type PreparedData } from '../app/run-analysis.ts'
 import type { LocalDate } from '../domain/config.ts'
 import { buildAttentionList } from './model/attention.ts'
@@ -35,6 +35,8 @@ export function Results(props: {
   )
   const sessions = useMemo(() => indexSessions(evaluation.plan), [evaluation])
   const departments = useMemo(() => departmentOptions(evaluation.overview.employees), [evaluation])
+  const idPrefix = useId()
+  const panelId = `${idPrefix}-panel`
 
   const tabs: readonly { readonly id: TabId; readonly label: string }[] = [
     { id: 'attention', label: `Co řešit (${attention.length})` },
@@ -48,22 +50,24 @@ export function Results(props: {
     <>
       <SummaryBar evaluation={evaluation} today={today} />
 
-      <nav role="tablist" className="flex flex-wrap gap-1 border-b border-gray-300">
+      <div role="tablist" className="flex flex-wrap gap-1 border-b border-gray-300">
         {tabs.map(({ id, label }) => (
           <button
             key={id}
+            id={`${idPrefix}-tab-${id}`}
             type="button"
             role="tab"
             aria-selected={tab === id}
+            aria-controls={panelId}
             className={`rounded-t px-3 py-1.5 text-sm ${tab === id ? 'bg-blue-700 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
             onClick={() => props.onTabChange(id)}
           >
             {label}
           </button>
         ))}
-      </nav>
+      </div>
 
-      <div role="tabpanel">
+      <div role="tabpanel" id={panelId} aria-labelledby={`${idPrefix}-tab-${tab}`}>
         {tab === 'attention' && <AttentionTab items={attention} sessions={sessions} departments={departments} />}
         {tab === 'employees' && (
           <EmployeesTab employees={evaluation.overview.employees} catalog={prepared.dataset.catalog} departments={departments} />
