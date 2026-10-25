@@ -65,7 +65,8 @@ export interface AllocationResult {
   readonly remainingSeats: ReadonlyMap<string, number>
 }
 
-const STATUS_PRIORITY: Readonly<Record<NeedStatus, number>> = {
+/** Urgency order shared by the allocation and the "what to deal with" list (assumption #18). */
+export const STATUS_PRIORITY: Readonly<Record<NeedStatus, number>> = {
   missing: 0,
   expired: 1,
   expiring: 2,

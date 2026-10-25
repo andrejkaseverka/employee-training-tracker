@@ -1,44 +1,19 @@
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { evaluate, prepareData } from '../src/app/run-analysis.ts'
 import { DEFAULT_CONFIG } from '../src/domain/config.ts'
-import { summarizeIssues, type DataQualityIssue, type DataSource } from '../src/domain/data-quality.ts'
-import { readCsvFile } from '../src/infrastructure/csv/read-csv-file.ts'
-import { buildTrainingOverview } from '../src/use-cases/build-training-overview.ts'
-import { loadDataset, type RawTables } from '../src/use-cases/load-dataset.ts'
-import { recommendEnrolments } from '../src/use-cases/recommend-enrolments.ts'
-import type { SourceRow } from '../src/domain/source-row.ts'
+import { readFixtures } from './load-fixtures.ts'
 
-// Synthetic fixtures reproducing the export quirks: Windows-1250 + CRLF + multi-line field +
-// repeated header (completions), UTF-8 with BOM (employees, sessions), plain UTF-8 (catalog).
-const FIXTURES = ['absolvovana_skoleni.csv', 'zamestnanci.csv', 'katalog_skoleni.csv', 'terminy_skoleni.csv']
-
-function loadFixtures(): { tables: RawTables; structuralIssues: DataQualityIssue[]; encodings: Record<string, string> } {
-  const rows: Partial<Record<DataSource, readonly SourceRow[]>> = {}
-  const structuralIssues: DataQualityIssue[] = []
-  const encodings: Record<string, string> = {}
-  for (const name of FIXTURES) {
-    const bytes = readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)))
-    const result = readCsvFile(new Uint8Array(bytes))
-    if (!result.ok) throw new Error(`Fixture ${name} not recognised`)
-    rows[result.source] = result.rows
-    structuralIssues.push(...result.issues)
-    encodings[result.source] = `${result.encoding}/${result.delimiter}`
-  }
-  const { employees = [], completions = [], catalog = [], sessions = [] } = rows
-  return { tables: { employees, completions, catalog, sessions }, structuralIssues, encodings }
-}
+const read = readFixtures()
 
 describe('pipeline on synthetic fixtures', () => {
-  const { tables, structuralIssues, encodings } = loadFixtures()
-  const loaded = loadDataset(tables, DEFAULT_CONFIG)
-  const overview = buildTrainingOverview(loaded.dataset, {
+  const { tables, structuralIssues } = read
+  const encodings = Object.fromEntries(read.files.map((file) => [file.source, `${file.encoding}/${file.delimiter}`]))
+  const loaded = prepareData(tables, structuralIssues, DEFAULT_CONFIG)
+  const { overview, plan } = evaluate(loaded.dataset, {
     today: DEFAULT_CONFIG.referenceDate,
     expiringSoonDays: DEFAULT_CONFIG.expiringSoonDays,
   })
-  const issueCounts = Object.fromEntries(
-    summarizeIssues([...structuralIssues, ...loaded.issues]).map((s) => [`${s.source}:${s.kind}`, s.count]),
-  )
+  const issueCounts = Object.fromEntries(loaded.issueSummary.map((s) => [`${s.source}:${s.kind}`, s.count]))
   const statusOf = (employeeId: string): Record<string, string> =>
     Object.fromEntries(
       overview.employees
@@ -116,7 +91,6 @@ describe('pipeline on synthetic fixtures', () => {
   })
 
   describe('enrolment recommendation', () => {
-    const plan = recommendEnrolments(loaded.dataset, overview, { today: DEFAULT_CONFIG.referenceDate })
     const placed = Object.fromEntries(
       plan.assignments.map((a) => [`${a.need.employeeId}|${a.need.code}`, a.sessionId]),
     )
