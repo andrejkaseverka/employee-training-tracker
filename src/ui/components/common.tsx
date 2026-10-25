@@ -17,11 +17,28 @@ export function StatusBadge({ status }: { readonly status: TrainingStatus | null
   return <span className={`rounded px-1.5 py-0.5 text-xs whitespace-nowrap ${STATUS_CLASSES[status]}`}>{STATUS_LABELS[status]}</span>
 }
 
-export function Table({ head, children }: { readonly head: readonly string[]; readonly children: ReactNode }): ReactElement {
+/**
+ * Below the `sm` breakpoint a stacked table shows each row as a block instead of a sideways-scrolling grid:
+ * the first two cells on their own lines, the middle cells as one grey meta line, the last cell on its own line.
+ */
+const STACKED_BODY =
+  'max-sm:[&>tr]:flex max-sm:[&>tr]:flex-wrap max-sm:[&>tr]:gap-x-3 max-sm:[&>tr]:gap-y-1 max-sm:[&>tr]:py-3 ' +
+  'max-sm:[&_td]:basis-full max-sm:[&_td]:px-0 max-sm:[&_td]:py-0 ' +
+  'max-sm:[&_td:nth-child(n+3):not(:last-child)]:basis-auto max-sm:[&_td:nth-child(n+3):not(:last-child)]:text-gray-600'
+
+export function Table({
+  head,
+  children,
+  stackBelowSm = false,
+}: {
+  readonly head: readonly string[]
+  readonly children: ReactNode
+  readonly stackBelowSm?: boolean
+}): ReactElement {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
-        <thead>
+        <thead className={stackBelowSm ? 'max-sm:sr-only' : undefined}>
           <tr className="border-b border-gray-300 text-left">
             {head.map((title) => (
               <th key={title} className="px-2 py-1 font-semibold">
@@ -30,7 +47,11 @@ export function Table({ head, children }: { readonly head: readonly string[]; re
             ))}
           </tr>
         </thead>
-        <tbody className="[&>tr]:border-b [&>tr]:border-gray-100 [&_td]:px-2 [&_td]:py-1 [&_td]:align-top">{children}</tbody>
+        <tbody
+          className={`[&>tr]:border-b [&>tr]:border-gray-100 [&_td]:px-2 [&_td]:py-1 [&_td]:align-top ${stackBelowSm ? STACKED_BODY : ''}`}
+        >
+          {children}
+        </tbody>
       </table>
     </div>
   )

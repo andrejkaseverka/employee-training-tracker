@@ -51,7 +51,7 @@ export function AttentionTab(props: {
       <Note>
         Zobrazeno {visible.length} z {props.items.length}
       </Note>
-      <Table head={['Stav', 'Zaměstnanec', 'Útvar', 'Školení', 'Platnost do', 'Co udělat']}>
+      <Table head={['Stav', 'Zaměstnanec', 'Útvar', 'Školení', 'Platnost do', 'Co udělat']} stackBelowSm>
         {visible.map((item) => (
           <tr key={`${item.person.employee.id}|${item.code}`}>
             <td>
