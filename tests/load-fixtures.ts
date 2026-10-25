@@ -4,7 +4,7 @@ import { readFiles, type FilesReadResult } from '../src/app/run-analysis.ts'
 
 // Synthetic fixtures reproducing the export quirks: Windows-1250 + CRLF + multi-line field +
 // repeated header (completions), UTF-8 with BOM (employees, sessions), plain UTF-8 (catalog).
-const FIXTURES = ['absolvovana_skoleni.csv', 'zamestnanci.csv', 'katalog_skoleni.csv', 'terminy_skoleni.csv']
+export const FIXTURES: readonly string[] = ['absolvovana_skoleni.csv', 'zamestnanci.csv', 'katalog_skoleni.csv', 'terminy_skoleni.csv']
 
 export type ReadFixtures = Extract<FilesReadResult, { ok: true }>
 
