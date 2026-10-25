@@ -1,0 +1,7 @@
+﻿id_terminu;kod_skoleni;datum;cas;misto;kapacita;obsazeno;cena_na_osobu;stav
+T01;KYBER;2026-10-20;09:00-12:00;Učebna A;20;5;450;plánováno
+T02;KYBER;2026-10-20;09:00-12:00;Učebna A;20;5;450;plánováno
+T03;PRV-POM;31. 9. 2026;08:00-15:00;Učebna B;15;15;1200;plánováno
+T04;KYB3R;2026-11-03;09:00-12:00;Online;30;0;;plánováno
+T05;BOZP-Z;2026-10-10;10:00-12:00;Učebna A;30;31;;plánováno
+T06;ZDVIH;2026-11-12;08:00-16:00;Dílna;8;2;2 100 Kč;zrušeno

@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Fixtures reproduce real export quirks (CRLF, Windows-1250, BOM) – keep bytes untouched.
+tests/fixtures/*.csv -text

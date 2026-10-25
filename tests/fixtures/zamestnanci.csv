@@ -1,0 +1,9 @@
+﻿id_zamestnance,jmeno,prijmeni,email,utvar,pozice,vedouci_email,datum_nastupu,datum_ukonceni,stav,rodne_cislo,poznamka
+D001,Alena,Testová,alena.testova@example.test,Laboratoře,Laborant,frantiska.hlavni@example.test,2019-03-01,,aktivní,,"=HYPERLINK(""http://example.test"")"
+D002,Bohumil,Zkušební,bohumil.zkusebni @example.test,LABORATORE,Laborant,frantiska.hlavni@example.test,1. 2. 2020,,aktivní,,
+D003,Cyril,Vzorový,cyril.vzorovy@example.test,Správa budov,Technik údržby,frantiska.hlavni@example.test,2018-05-01,,aktivní,,
+D004,Dana,Ukázková,dana.ukazkova@example.test,,Referent,frantiska.hlavni@example.test,2021-01-01,,rodičovská,,
+D005,Emil,Nový,emil.novy@example.test,Knihovna,Knihovník,frantiska.hlavni@example.test,2026-10-15,,aktivní,,
+D006,Františka,Hlavní,frantiska.hlavni@example.test,Vedení,Vedoucí,,2015-01-01,,aktivní,,
+D007,Gustav,Odešlý,gustav.odesly@example.test,Knihovna,Knihovník,frantiska.hlavni@example.test,2017-01-01,2026-06-30,ukončen,,
+D008,Hana,Odcházející,hana.odchazejici@example.test,správa budov,Technik,nikdo@example.test,2020-01-01,2026-12-31,aktivní,,@SUM(1+1)
