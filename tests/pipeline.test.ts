@@ -6,6 +6,7 @@ import { summarizeIssues, type DataQualityIssue, type DataSource } from '../src/
 import { readCsvFile } from '../src/infrastructure/csv/read-csv-file.ts'
 import { buildTrainingOverview } from '../src/use-cases/build-training-overview.ts'
 import { loadDataset, type RawTables } from '../src/use-cases/load-dataset.ts'
+import { recommendEnrolments } from '../src/use-cases/recommend-enrolments.ts'
 import type { SourceRow } from '../src/domain/source-row.ts'
 
 // Synthetic fixtures reproducing the export quirks: Windows-1250 + CRLF + multi-line field +
@@ -112,6 +113,63 @@ describe('pipeline on synthetic fixtures', () => {
 
   it('counts statuses', () => {
     expect(overview.statusCounts).toEqual({ valid: 9, expiring: 1, expired: 4, missing: 6, undetermined: 0 })
+  })
+
+  describe('enrolment recommendation', () => {
+    const plan = recommendEnrolments(loaded.dataset, overview, { today: DEFAULT_CONFIG.referenceDate })
+    const placed = Object.fromEntries(
+      plan.assignments.map((a) => [`${a.need.employeeId}|${a.need.code}`, a.sessionId]),
+    )
+    const unplaced = Object.fromEntries(plan.unassigned.map((u) => [`${u.need.employeeId}|${u.need.code}`, u.reason]))
+
+    it('books every training that is not valid, or explains why not', () => {
+      expect(plan.assignments.length + plan.unassigned.length).toBe(
+        overview.statusCounts.missing + overview.statusCounts.expired + overview.statusCounts.expiring,
+      )
+    })
+
+    it('assigns by priority, start date and without time clashes', () => {
+      expect(placed).toEqual({
+        'D002|PRV-POM': 'T09',
+        'D005|BOZP-Z': 'T07',
+        // T01 clashes with T07 on the same morning.
+        'D005|KYBER': 'T08',
+        'D006|KYBER': 'T01',
+        'D003|KYBER': 'T01',
+        'D002|KYBER': 'T01',
+        'D001|KYBER': 'T01',
+      })
+    })
+
+    it('explains unassigned trainings', () => {
+      expect(unplaced).toEqual({
+        'D004|KYBER': 'parental-leave',
+        'D004|BOZP-Z': 'parental-leave',
+        'D008|PRV-POM': 'capacity-exhausted',
+        'D001|PRV-POM': 'capacity-exhausted',
+      })
+    })
+
+    it('lists requirements that cannot be decided, outside the booking counts', () => {
+      expect(plan.undeterminedRequirements).toEqual([{ employeeId: 'D004', code: 'PRV-POM' }])
+    })
+
+    it('never exceeds free seats and explains sessions not offered', () => {
+      const usage = Object.fromEntries(
+        plan.sessions.map((s) => [s.session.id, s.offer.offered ? `${s.assigned}/${s.seatsLeft}` : s.offer.reason]),
+      )
+      expect(usage).toEqual({
+        T01: '4/11',
+        T02: 'duplicate',
+        T03: 'invalid-date',
+        T04: 'unknown-code',
+        T05: 'full',
+        T06: 'cancelled',
+        T07: '1/0',
+        T08: '1/2',
+        T09: '1/0',
+      })
+    })
   })
 
   it('keeps sensitive columns out of the domain model', () => {

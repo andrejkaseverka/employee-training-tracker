@@ -41,6 +41,7 @@ export type IssueKind =
   // sessions
   | 'overbooked-session'
   | 'duplicate-session'
+  | 'duplicate-session-id'
   | 'invalid-time'
 
 export interface DataQualityIssue {
