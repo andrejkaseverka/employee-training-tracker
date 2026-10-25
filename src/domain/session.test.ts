@@ -85,4 +85,13 @@ describe('mapSessions', () => {
   it('detects duplicates whose time is written differently', () => {
     expect(kinds([row({ cas: '09:00-12:00' }), row({ cas: '9:00 - 12:00' })])).toEqual(['duplicate-session'])
   })
+
+  it('treats a repeated id as a duplicate so seats are never counted twice under one id', () => {
+    const first = row({ id_terminu: 'SAME' })
+    const second = row({ id_terminu: 'SAME', datum: '2026-11-20' })
+    const { sessions, issues } = mapSessions([first, second], catalog)
+    expect(sessions[0]?.duplicateOf).toBeNull()
+    expect(sessions[1]?.duplicateOf).toBe('SAME')
+    expect(issues.map((issue) => issue.kind)).toEqual(['duplicate-session-id'])
+  })
 })

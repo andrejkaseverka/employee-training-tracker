@@ -21,7 +21,7 @@ export interface Session {
   /** max(0, capacity − booked); 0 when either number is unknown (never offer seats we cannot vouch for). */
   readonly freeSeats: number
   readonly cancelled: boolean
-  /** Another session with the same training, date, time and place appears earlier in the file. */
+  /** Id of an earlier session with the same training, date, time and place, or with the same id. */
   readonly duplicateOf: string | null
 }
 
@@ -40,6 +40,7 @@ export function mapSessions(rows: readonly SourceRow[], catalog: Catalog): Sessi
   const issues = new IssueCollector('sessions')
   const sessions: Session[] = []
   const firstByIdentity = new Map<string, string>()
+  const seenIds = new Set<string>()
 
   for (const source of rows) {
     const id = field(source, 'id_terminu')
@@ -74,9 +75,14 @@ export function mapSessions(rows: readonly SourceRow[], catalog: Catalog): Sessi
     const place = field(source, 'misto')
     const timeKey = time === null ? field(source, 'cas') : `${time.start}-${time.end}`
     const identity = [code, date ?? field(source, 'datum'), timeKey, comparisonKey(place)].join('|')
-    const duplicateOf = firstByIdentity.get(identity) ?? null
-    if (duplicateOf === null) firstByIdentity.set(identity, id)
-    else issues.add(source.row, 'duplicate-session', 'flagged', 'id_terminu')
+    // A repeated id would merge seat counts downstream, so the later row is never offered.
+    const sameContent = firstByIdentity.get(identity) ?? null
+    const sameId = seenIds.has(id) ? id : null
+    const duplicateOf = sameContent ?? sameId
+    if (sameContent === null) firstByIdentity.set(identity, id)
+    seenIds.add(id)
+    if (sameContent !== null) issues.add(source.row, 'duplicate-session', 'flagged', 'id_terminu')
+    else if (sameId !== null) issues.add(source.row, 'duplicate-session-id', 'flagged', 'id_terminu')
 
     sessions.push({
       row: source.row,
