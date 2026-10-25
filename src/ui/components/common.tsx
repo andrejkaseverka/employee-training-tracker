@@ -12,7 +12,7 @@ const STATUS_CLASSES: Readonly<Record<TrainingStatus, string>> = {
 
 export function StatusBadge({ status }: { readonly status: TrainingStatus | null }): ReactElement {
   if (status === null) {
-    return <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-900">{UNKNOWN_REQUIREMENT_LABEL}</span>
+    return <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs whitespace-nowrap text-gray-900">{UNKNOWN_REQUIREMENT_LABEL}</span>
   }
   return <span className={`rounded px-1.5 py-0.5 text-xs whitespace-nowrap ${STATUS_CLASSES[status]}`}>{STATUS_LABELS[status]}</span>
 }
