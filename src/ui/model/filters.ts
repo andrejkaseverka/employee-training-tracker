@@ -1,6 +1,6 @@
 import type { Employee } from '../../domain/employee.ts'
 import { comparisonKey } from '../../domain/normalize.ts'
-import type { TrainingStatus } from '../../domain/training-status.ts'
+import { TRAINING_STATUSES, type TrainingStatus } from '../../domain/training-status.ts'
 import type { EmployeeOverview } from '../../use-cases/build-training-overview.ts'
 
 /** Filter value meaning "no filter". */
@@ -22,6 +22,11 @@ export interface TrainingFilter {
 
 export const EMPTY_PERSON_FILTER: PersonFilter = { department: ANY, search: '' }
 export const EMPTY_TRAINING_FILTER: TrainingFilter = { status: ANY, code: ANY }
+
+/** Select value → status filter; anything unknown means "no filter". */
+export function toStatusFilter(value: string): TrainingStatus | typeof ANY {
+  return TRAINING_STATUSES.find((status) => status === value) ?? ANY
+}
 
 export function matchesPerson(employee: Employee, filter: PersonFilter): boolean {
   if (filter.department === NO_DEPARTMENT && employee.department !== null) return false

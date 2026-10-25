@@ -1,4 +1,6 @@
 import type { LocalDate } from '../../domain/config.ts'
+import type { Employee } from '../../domain/employee.ts'
+import type { EmployeeFlags } from '../../use-cases/build-training-overview.ts'
 
 const FEW_MAX = 4
 
@@ -32,4 +34,19 @@ export function formatGap(gapDays: number): string {
 
 export function formatTime(start: string | null, end: string | null): string {
   return start === null || end === null ? 'čas neznámý' : `${start}–${end}`
+}
+
+/** "Příjmení Jméno", as HR lists sort. */
+export function personName(employee: Employee): string {
+  return `${employee.lastName} ${employee.firstName}`
+}
+
+/** Short notes about the person that change what can be done. */
+export function describeFlags(flags: EmployeeFlags): string[] {
+  const notes: string[] = []
+  if (flags.startsOn !== null) notes.push(`nastupuje ${formatDate(flags.startsOn)}`)
+  if (flags.leavesOn !== null) notes.push(`odchází ${formatDate(flags.leavesOn)}`)
+  if (flags.onParentalLeave) notes.push('rodičovská dovolená')
+  if (flags.missingDepartment) notes.push('chybí útvar')
+  return notes
 }
