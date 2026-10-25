@@ -51,8 +51,11 @@ export function EmployeesTab(props: {
       <ul className="divide-y divide-gray-100 rounded border border-gray-200 bg-white">
         {visible.map((entry) => (
           <li key={entry.employee.id}>
-            <details>
-              <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
+            <details className="group">
+              <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-700 [&::-webkit-details-marker]:hidden">
+                <span aria-hidden="true" className="text-gray-500 transition-transform group-open:rotate-90">
+                  ▸
+                </span>
                 <strong>{personName(entry.employee)}</strong>
                 <span className="text-gray-600">
                   {entry.employee.department ?? 'bez útvaru'} · {entry.employee.position}
@@ -76,7 +79,7 @@ export function EmployeesTab(props: {
                       </td>
                       <td>{formatDate(row.lastCompletedOn)}</td>
                       <td>
-                        {row.validitySource === 'none' ? 'bez expirace' : formatDate(row.validUntil)}
+                        {row.validitySource === 'none' ? VALIDITY_SOURCE_LABELS.none : formatDate(row.validUntil)}
                         <div className="text-xs text-gray-600">{formatDaysLeft(row.daysLeft)}</div>
                       </td>
                       <td>{row.validitySource === null ? '–' : VALIDITY_SOURCE_LABELS[row.validitySource]}</td>

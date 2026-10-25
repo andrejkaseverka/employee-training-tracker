@@ -15,6 +15,20 @@ export const STATUS_LABELS: Readonly<Record<TrainingStatus, string>> = {
   valid: 'Platné',
 }
 
+/** Requirement that cannot be decided (missing department), shown where a status would be. */
+export const UNKNOWN_REQUIREMENT_LABEL = 'Povinnost nejasná'
+
+const SEE_CONSOLE = 'Technické detaily (bez obsahu dat) jsou v konzoli prohlížeče.'
+
+export const ERROR_TEXTS = {
+  /** The browser could not read the picked files, or the demo files could not be downloaded. */
+  unreadable: 'Soubory se nepodařilo přečíst. Zkuste je vybrat (nebo ukázková data načíst) znovu.',
+  /** A bug while validating or normalising the data – the files themselves are most likely fine. */
+  processing: `Při zpracování dat došlo k chybě aplikace – nejspíš nejde o chybu ve vašich souborech. ${SEE_CONSOLE}`,
+  /** A bug while computing or showing the results. */
+  results: `Výsledky se nepodařilo zobrazit kvůli chybě aplikace – nejspíš nejde o chybu v datech. Zkuste jiné okno „brzy vyprší“ nebo data nahrajte znovu. ${SEE_CONSOLE}`,
+} as const
+
 export const UNASSIGNED_LABELS: Readonly<Record<UnassignedReason, string>> = {
   'parental-leave': 'Rodičovská dovolená – nezařazuje se',
   'undetermined-validity': 'Platnost nelze určit – nejdřív ověřit záznam',

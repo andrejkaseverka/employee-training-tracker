@@ -7,7 +7,7 @@ import { ResolutionText } from '../components/ResolutionText.tsx'
 import type { AttentionItem } from '../model/attention.ts'
 import { ANY, EMPTY_PERSON_FILTER, matchesPerson, type PersonFilter } from '../model/filters.ts'
 import { describeFlags, formatDate, formatDaysLeft, personName } from '../model/format.ts'
-import { STATUS_LABELS } from '../model/labels.ts'
+import { STATUS_LABELS, UNKNOWN_REQUIREMENT_LABEL } from '../model/labels.ts'
 
 const UNKNOWN_REQUIREMENT = 'unknown-requirement'
 
@@ -43,7 +43,7 @@ export function AttentionTab(props: {
           options={[
             { value: ANY, label: 'Vše' },
             ...TRAINING_STATUSES.filter((s) => s !== 'valid').map((s) => ({ value: s, label: STATUS_LABELS[s] })),
-            { value: UNKNOWN_REQUIREMENT, label: 'Povinnost nejasná' },
+            { value: UNKNOWN_REQUIREMENT, label: UNKNOWN_REQUIREMENT_LABEL },
           ]}
           onChange={setStatus}
         />

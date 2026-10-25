@@ -1,22 +1,20 @@
 import type { ChangeEvent, ReactElement } from 'react'
-import type { InputFile, RecognisedFile } from '../app/run-analysis.ts'
+import type { RecognisedFile } from '../app/run-analysis.ts'
 import { SOURCE_LABELS } from './model/labels.ts'
 
 export function DataLoader(props: {
   readonly busy: boolean
   readonly files: readonly RecognisedFile[]
   readonly problems: readonly string[]
-  readonly onFiles: (files: InputFile[]) => void
+  /** Raw picked files; reading them is the caller's job, so busy state and error handling cover it. */
+  readonly onFiles: (files: readonly File[]) => void
   readonly onDemo: () => void
 }): ReactElement {
-  async function handleChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+  function handleChange(event: ChangeEvent<HTMLInputElement>): void {
     const selected = [...(event.target.files ?? [])]
     // Allow picking the same files again after a fix.
     event.target.value = ''
-    if (selected.length === 0) return
-    props.onFiles(
-      await Promise.all(selected.map(async (file) => ({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) }))),
-    )
+    if (selected.length > 0) props.onFiles(selected)
   }
 
   return (
@@ -31,7 +29,7 @@ export function DataLoader(props: {
             accept=".csv,text/csv"
             disabled={props.busy}
             className="mt-1 text-sm"
-            onChange={(event) => void handleChange(event)}
+            onChange={handleChange}
           />
         </label>
         <button
