@@ -6,6 +6,8 @@ what needs attention) and recommending whom to enrol in which limited-capacity t
 Everything runs in the browser: the four CSV exports are read locally and never leave the
 machine. The demo button loads a small synthetic dataset from `tests/fixtures/`.
 
+**Live app:** https://andrejkaseverka.github.io/employee-training-tracker/
+
 ## Run locally
 
 Requires Node.js 24+.
