@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react'
+import { useId, type ReactElement, type ReactNode } from 'react'
 import type { TrainingStatus } from '../../domain/training-status.ts'
 import { STATUS_LABELS, UNKNOWN_REQUIREMENT_LABEL } from '../model/labels.ts'
 
@@ -70,22 +70,33 @@ export function SelectField(props: {
   readonly value: string
   readonly options: readonly Option[]
   readonly onChange: (value: string) => void
+  /** Short explanation shown under the field and announced as its description. */
+  readonly hint?: string
 }): ReactElement {
+  const hintId = useId()
   return (
-    <label className="flex flex-col text-xs text-gray-600">
-      {props.label}
-      <select
-        className="rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
-        value={props.value}
-        onChange={(event) => props.onChange(event.target.value)}
-      >
-        {props.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="flex flex-col gap-1">
+      <label className="flex flex-col text-xs text-gray-600">
+        {props.label}
+        <select
+          className="self-start rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
+          value={props.value}
+          aria-describedby={props.hint === undefined ? undefined : hintId}
+          onChange={(event) => props.onChange(event.target.value)}
+        >
+          {props.options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {props.hint !== undefined && (
+        <p id={hintId} className="max-w-prose text-xs text-gray-600">
+          {props.hint}
+        </p>
+      )}
+    </div>
   )
 }
 
