@@ -57,7 +57,9 @@ export function mapEmployees(rows: readonly SourceRow[]): EmployeeMappingResult 
       issues.add(source.row, 'duplicate-employee-id', 'dropped', 'id_zamestnance')
       continue
     }
-    const status = STATUS_BY_KEY[comparisonKey(field(source, 'stav'))]
+    const statusKey = comparisonKey(field(source, 'stav'))
+    // Own keys only: inherited ones like "constructor" must not count as a status.
+    const status = Object.hasOwn(STATUS_BY_KEY, statusKey) ? STATUS_BY_KEY[statusKey] : undefined
     if (status === undefined) {
       issues.add(source.row, 'unknown-status', 'dropped', 'stav')
       continue

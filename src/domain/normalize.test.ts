@@ -31,6 +31,12 @@ describe('departmentKey', () => {
     expect(departmentKey('Studijní')).toBe('studijni oddeleni')
     expect(departmentKey('Studijní oddělení')).toBe('studijni oddeleni')
   })
+
+  it('ignores inherited object keys', () => {
+    expect(departmentKey('constructor')).toBe('constructor')
+    expect(departmentKey('toString')).toBe('tostring')
+    expect(departmentKey('__proto__')).toBe('__proto__')
+  })
 })
 
 describe('buildDepartmentDirectory', () => {

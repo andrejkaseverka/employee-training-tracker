@@ -3,6 +3,9 @@ import type { SourceRow } from '../../domain/source-row.ts'
 
 export type Delimiter = ',' | ';'
 
+/** Record number of the header line in the file. */
+const HEADER_ROW_NUMBER = 1
+
 export interface ParsedCsv {
   readonly headers: readonly string[]
   readonly delimiter: Delimiter
@@ -13,11 +16,27 @@ export interface ParsedCsv {
   readonly malformedRows: readonly number[]
 }
 
-/** Picks `;` or `,` by counting them in the header line. */
+/**
+ * Picks `;` or `,` by counting them outside quoted fields in the header record
+ * (a quoted header may contain delimiters, `""` escapes and line breaks). Ties pick `,`.
+ */
 export function detectDelimiter(text: string): Delimiter {
-  const headerLine = text.split(/\r?\n/, 1)[0] ?? ''
-  const count = (char: string): number => headerLine.split(char).length - 1
-  return count(';') > count(',') ? ';' : ','
+  let commas = 0
+  let semicolons = 0
+  let inQuotes = false
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+    if (inQuotes) {
+      if (char === '"') {
+        if (text[i + 1] === '"') i++
+        else inQuotes = false
+      }
+    } else if (char === '"') inQuotes = true
+    else if (char === '\n' || char === '\r') break
+    else if (char === ',') commas++
+    else if (char === ';') semicolons++
+  }
+  return semicolons > commas ? ';' : ','
 }
 
 /**
@@ -29,6 +48,11 @@ export function parseCsvText(text: string): ParsedCsv {
   const result = Papa.parse<string[]>(text, { delimiter, header: false, skipEmptyLines: false, quoteChar: '"' })
   const [headerCells = [], ...dataRows] = result.data
   const headers = headerCells.map(normalizeHeader)
+
+  // Duplicate column names make every row ambiguous: flag the header record as malformed, build no rows.
+  if (new Set(headers).size !== headers.length) {
+    return { headers, delimiter, rows: [], repeatedHeaderRows: [], malformedRows: [HEADER_ROW_NUMBER] }
+  }
 
   const parserErrorRows = new Set<number>()
   for (const error of result.errors) {
@@ -51,7 +75,8 @@ export function parseCsvText(text: string): ParsedCsv {
       malformedRows.push(rowNumber)
       return
     }
-    const values: Record<string, string> = {}
+    // No prototype, so a header such as "__proto__" is stored as a plain column.
+    const values = Object.create(null) as Record<string, string>
     headers.forEach((header, i) => {
       values[header] = cells[i] ?? ''
     })

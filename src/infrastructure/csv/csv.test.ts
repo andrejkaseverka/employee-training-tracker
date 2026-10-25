@@ -28,6 +28,19 @@ describe('detectDelimiter', () => {
     expect(detectDelimiter('a;b;c\r\n1,5;2;3')).toBe(';')
     expect(detectDelimiter('a,b,c\n1;2,3,4')).toBe(',')
   })
+
+  it('ignores delimiters inside quoted header fields', () => {
+    expect(detectDelimiter('"a,b,c";d;e')).toBe(';')
+    expect(detectDelimiter('"x;""y;z""",b,c')).toBe(',')
+  })
+
+  it('reads a quoted header field across a line break', () => {
+    expect(detectDelimiter('"a\n,,,";b;c\n1,2,3,4,5')).toBe(';')
+  })
+
+  it('picks comma on a tie', () => {
+    expect(detectDelimiter('a,b;c')).toBe(',')
+  })
 })
 
 describe('parseCsvText', () => {
@@ -40,8 +53,21 @@ describe('parseCsvText', () => {
     ])
   })
 
+  it('keeps columns named like object prototype keys', () => {
+    const [row] = parseCsvText('__proto__,constructor\na,b').rows
+    expect(row?.values['__proto__']).toBe('a')
+    expect(row?.values['constructor']).toBe('b')
+    expect(row?.values['toString']).toBeUndefined()
+  })
+
   it('normalises headers (BOM, case, whitespace)', () => {
     expect(parseCsvText('﻿ ID ,Kod\n1,A').headers).toEqual(['id', 'kod'])
+  })
+
+  it('reports duplicate headers (after normalisation) as malformed and builds no rows', () => {
+    const parsed = parseCsvText('id, ID ,kod\n1,2,A\n')
+    expect(parsed.rows).toEqual([])
+    expect(parsed.malformedRows).toEqual([1])
   })
 
   it('skips empty lines and repeated headers, reports malformed rows', () => {

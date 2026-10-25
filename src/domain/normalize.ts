@@ -29,7 +29,8 @@ export const DEPARTMENT_ALIASES: Readonly<Record<string, string>> = {
 /** Department key: comparison key with abbreviations expanded. */
 export function departmentKey(raw: string): string {
   const key = comparisonKey(raw)
-  return DEPARTMENT_ALIASES[key] ?? key
+  // Own keys only: inherited ones like "constructor" must not count as an alias.
+  return Object.hasOwn(DEPARTMENT_ALIASES, key) ? (DEPARTMENT_ALIASES[key] ?? key) : key
 }
 
 export interface DepartmentDirectory {

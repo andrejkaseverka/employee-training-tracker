@@ -67,6 +67,20 @@ describe('mapEmployees', () => {
     ])
   })
 
+  it('treats inherited object keys as unknown status', () => {
+    const { employees, issues } = mapEmployees([
+      row(2, { stav: 'constructor' }),
+      row(3, { stav: '__proto__' }),
+      row(4, { stav: 'toString' }),
+    ])
+    expect(employees.size).toBe(0)
+    expect(issues.map((issue) => [issue.row, issue.kind])).toEqual([
+      [2, 'unknown-status'],
+      [3, 'unknown-status'],
+      [4, 'unknown-status'],
+    ])
+  })
+
   it('flags invalid dates and unknown managers but keeps the employee', () => {
     const { employees, issues } = mapEmployees([
       row(2, { email: 'sef@example.test' }),
