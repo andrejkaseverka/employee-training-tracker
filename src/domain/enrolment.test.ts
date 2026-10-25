@@ -77,6 +77,11 @@ describe('allocateEnrolments', () => {
     expect(reasons(allocateEnrolments([need({ code: 'ZDVIH' })], [session()]))).toEqual({ 'P1|ZDVIH': 'no-session' })
   })
 
+  it('reports no-offered-session when the training is scheduled but none of its sessions is offered', () => {
+    const result = allocateEnrolments([need({ code: 'ZDVIH' })], [session()], { scheduledCodes: new Set(['ZDVIH']) })
+    expect(reasons(result)).toEqual({ 'P1|ZDVIH': 'no-offered-session' })
+  })
+
   it('respects the start date of a future joiner', () => {
     const result = allocateEnrolments(
       [need({ startsOn: d('2026-10-15') })],

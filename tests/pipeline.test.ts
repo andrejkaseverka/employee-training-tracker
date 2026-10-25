@@ -150,6 +150,10 @@ describe('pipeline on synthetic fixtures', () => {
       })
     })
 
+    it('lists requirements that cannot be decided, outside the booking counts', () => {
+      expect(plan.undeterminedRequirements).toEqual([{ employeeId: 'D004', code: 'PRV-POM' }])
+    })
+
     it('never exceeds free seats and explains sessions not offered', () => {
       const usage = Object.fromEntries(
         plan.sessions.map((s) => [s.session.id, s.offer.offered ? `${s.assigned}/${s.seatsLeft}` : s.offer.reason]),

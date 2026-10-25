@@ -31,6 +31,13 @@ export interface EnrolmentPlan {
   /** Every session from the export, in file order, with why it is (not) offered. */
   readonly sessions: readonly SessionUsage[]
   readonly unassignedCounts: Readonly<Record<UnassignedReason, number>>
+  /** Department-based trainings that cannot be decided (missing department): neither booked nor counted above. */
+  readonly undeterminedRequirements: readonly UndeterminedRequirement[]
+}
+
+export interface UndeterminedRequirement {
+  readonly employeeId: string
+  readonly code: string
 }
 
 const UNASSIGNED_REASONS: readonly UnassignedReason[] = [
@@ -38,6 +45,7 @@ const UNASSIGNED_REASONS: readonly UnassignedReason[] = [
   'undetermined-validity',
   'leaves-before-expiry',
   'no-session',
+  'no-offered-session',
   'no-session-in-employment',
   'capacity-exhausted',
   'time-conflict',
@@ -50,7 +58,11 @@ export function recommendEnrolments(
   options: EnrolmentOptions,
 ): EnrolmentPlan {
   const needs: EnrolmentNeed[] = []
+  const undeterminedRequirements: UndeterminedRequirement[] = []
   for (const entry of overview.employees) {
+    for (const code of entry.undeterminedRequirements) {
+      undeterminedRequirements.push({ employeeId: entry.employee.id, code })
+    }
     for (const training of entry.trainings) {
       if (training.status === 'valid') continue
       needs.push({
@@ -80,7 +92,8 @@ export function recommendEnrolments(
     })
   }
 
-  const result = allocateEnrolments(needs, offered)
+  const scheduledCodes = new Set(dataset.sessions.filter((session) => session.codeKnown).map((session) => session.code))
+  const result = allocateEnrolments(needs, offered, { scheduledCodes })
   const assignedBySession = new Map<string, number>()
   for (const assignment of result.assignments) {
     assignedBySession.set(assignment.sessionId, (assignedBySession.get(assignment.sessionId) ?? 0) + 1)
@@ -101,5 +114,6 @@ export function recommendEnrolments(
       seatsLeft: offer.offered ? (result.remainingSeats.get(session.id) ?? 0) : 0,
     })),
     unassignedCounts,
+    undeterminedRequirements,
   }
 }

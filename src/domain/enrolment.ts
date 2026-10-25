@@ -31,7 +31,10 @@ export type UnassignedReason =
   | 'parental-leave'
   | 'undetermined-validity'
   | 'leaves-before-expiry'
+  /** The training has no session at all in the export. */
   | 'no-session'
+  /** The training has sessions, but none is offered (past, cancelled, full, duplicate…). */
+  | 'no-offered-session'
   | 'no-session-in-employment'
   | 'capacity-exhausted'
   | 'time-conflict'
@@ -47,6 +50,11 @@ export interface Assignment {
 export interface Unassigned {
   readonly need: EnrolmentNeed
   readonly reason: UnassignedReason
+}
+
+export interface AllocationOptions {
+  /** Codes with at least one session in the export, offered or not; tells `no-session` from `no-offered-session`. */
+  readonly scheduledCodes?: ReadonlySet<string>
 }
 
 export interface AllocationResult {
@@ -86,6 +94,7 @@ function compareSessions(a: OfferedSession, b: OfferedSession): number {
 export function allocateEnrolments(
   needs: readonly EnrolmentNeed[],
   sessions: readonly OfferedSession[],
+  options: AllocationOptions = {},
 ): AllocationResult {
   const sessionsByCode = new Map<string, OfferedSession[]>()
   for (const session of [...sessions].sort(compareSessions)) {
@@ -111,7 +120,7 @@ export function allocateEnrolments(
     }
     const forCode = sessionsByCode.get(need.code) ?? []
     if (forCode.length === 0) {
-      unassigned.push({ need, reason: 'no-session' })
+      unassigned.push({ need, reason: options.scheduledCodes?.has(need.code) ? 'no-offered-session' : 'no-session' })
       continue
     }
     const inEmployment = forCode.filter((session) => withinEmployment(session.date, need))
