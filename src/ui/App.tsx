@@ -88,6 +88,7 @@ export function App(): ReactElement {
               value={String(expiringSoonDays)}
               options={EXPIRY_WINDOW_OPTIONS.map((d) => ({ value: String(d), label: `${d} dní` }))}
               onChange={(value) => setExpiringSoonDays(Number(value))}
+              hint="Platná školení, která vyprší do zvoleného počtu dní, se ukážou v „Co řešit“ a v souhrnu. Dostanou i doporučený termín – až po chybějících a prošlých, pokud zbude místo."
             />
           </div>
           {/* key: a new dataset remounts the results (fresh filters); resetKey: another window retries after an error. */}

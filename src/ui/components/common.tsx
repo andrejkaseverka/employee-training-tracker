@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react'
+import { useId, type ReactElement, type ReactNode } from 'react'
 import type { TrainingStatus } from '../../domain/training-status.ts'
 import { STATUS_LABELS, UNKNOWN_REQUIREMENT_LABEL } from '../model/labels.ts'
 
@@ -12,25 +12,49 @@ const STATUS_CLASSES: Readonly<Record<TrainingStatus, string>> = {
 
 export function StatusBadge({ status }: { readonly status: TrainingStatus | null }): ReactElement {
   if (status === null) {
-    return <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-900">{UNKNOWN_REQUIREMENT_LABEL}</span>
+    return <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs whitespace-nowrap text-gray-900">{UNKNOWN_REQUIREMENT_LABEL}</span>
   }
   return <span className={`rounded px-1.5 py-0.5 text-xs whitespace-nowrap ${STATUS_CLASSES[status]}`}>{STATUS_LABELS[status]}</span>
 }
 
-export function Table({ head, children }: { readonly head: readonly string[]; readonly children: ReactNode }): ReactElement {
+/**
+ * Below the `sm` breakpoint a stacked table shows each row as a block instead of a sideways-scrolling grid:
+ * the first two cells on their own lines, the middle cells as one grey meta line, the last cell on its own line.
+ */
+const STACKED_BODY =
+  'max-sm:[&>tr]:flex max-sm:[&>tr]:flex-wrap max-sm:[&>tr]:gap-x-3 max-sm:[&>tr]:gap-y-1 max-sm:[&>tr]:py-3 ' +
+  'max-sm:[&_td]:basis-full max-sm:[&_td]:px-0 max-sm:[&_td]:py-0 ' +
+  'max-sm:[&_td:nth-child(n+3):not(:last-child)]:basis-auto max-sm:[&_td:nth-child(n+3):not(:last-child)]:text-gray-600'
+
+export function Table({
+  head,
+  children,
+  stackBelowSm = false,
+  numericColumns = [],
+}: {
+  readonly head: readonly string[]
+  readonly children: ReactNode
+  readonly stackBelowSm?: boolean
+  /** Column indexes whose header is right-aligned; their cells set `text-right` themselves. */
+  readonly numericColumns?: readonly number[]
+}): ReactElement {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
-        <thead>
+      <table className="w-full border-collapse text-sm tabular-nums">
+        <thead className={stackBelowSm ? 'max-sm:sr-only' : undefined}>
           <tr className="border-b border-gray-300 text-left">
-            {head.map((title) => (
-              <th key={title} className="px-2 py-1 font-semibold">
+            {head.map((title, index) => (
+              <th key={title} className={`px-2 py-1 font-semibold ${numericColumns.includes(index) ? 'text-right' : ''}`}>
                 {title}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="[&>tr]:border-b [&>tr]:border-gray-100 [&_td]:px-2 [&_td]:py-1 [&_td]:align-top">{children}</tbody>
+        <tbody
+          className={`[&>tr]:border-b [&>tr]:border-gray-100 [&_td]:px-2 [&_td]:py-1 [&_td]:align-top ${stackBelowSm ? STACKED_BODY : ''}`}
+        >
+          {children}
+        </tbody>
       </table>
     </div>
   )
@@ -46,22 +70,33 @@ export function SelectField(props: {
   readonly value: string
   readonly options: readonly Option[]
   readonly onChange: (value: string) => void
+  /** Short explanation shown under the field and announced as its description. */
+  readonly hint?: string
 }): ReactElement {
+  const hintId = useId()
   return (
-    <label className="flex flex-col text-xs text-gray-600">
-      {props.label}
-      <select
-        className="rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
-        value={props.value}
-        onChange={(event) => props.onChange(event.target.value)}
-      >
-        {props.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="flex flex-col gap-1">
+      <label className="flex flex-col text-xs text-gray-600">
+        {props.label}
+        <select
+          className="self-start rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
+          value={props.value}
+          aria-describedby={props.hint === undefined ? undefined : hintId}
+          onChange={(event) => props.onChange(event.target.value)}
+        >
+          {props.options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {props.hint !== undefined && (
+        <p id={hintId} className="max-w-prose text-xs text-gray-600">
+          {props.hint}
+        </p>
+      )}
+    </div>
   )
 }
 

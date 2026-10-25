@@ -12,7 +12,7 @@ export function DataQualityTab({ issues }: { readonly issues: readonly IssueSumm
       {issues.length === 0 ? (
         <Note>Žádné problémy nenalezeny.</Note>
       ) : (
-        <Table head={['Tabulka', 'Problém', 'Dopad', 'Počet']}>
+        <Table head={['Tabulka', 'Problém', 'Dopad', 'Počet']} numericColumns={[3]}>
           {issues.map((issue) => (
             <tr key={`${issue.source}|${issue.kind}|${issue.severity}`}>
               <td>{SOURCE_LABELS[issue.source]}</td>
