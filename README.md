@@ -28,7 +28,11 @@ Checks (the same as CI):
 npm run typecheck
 npm run lint
 npm test
+npm run build && npm run check:dist   # the build may contain only the demo fixtures
 ```
+
+CI runs these checks on every pull request; a push to `main` also deploys `dist/` to
+GitHub Pages.
 
 ## Using the app
 
@@ -51,3 +55,4 @@ undecidable (missing department).
 - `src/infrastructure/csv` – decoding, parsing and recognising CSV files.
 - `src/app` – composition: files → dataset → overview and plan; demo dataset.
 - `src/ui` – React components; presentation logic in `src/ui/model` (tested without a DOM).
+- `scripts` – build output check (`check:dist`).
