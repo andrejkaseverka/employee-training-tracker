@@ -70,15 +70,18 @@ export function headerLine(csv: Uint8Array): Uint8Array {
   return csv.subarray(start, end)
 }
 
-/** All CSV files and CSV-capable base64 data URIs in the build output. */
-export function collectCsvPayloads(files: readonly BuildFile[]): CsvPayload[] {
+/** CSV files emitted as standalone assets. */
+export function collectCsvFiles(files: readonly BuildFile[]): CsvPayload[] {
+  return files
+    .filter((file) => hasExtension(file.path, [CSV_EXTENSION]))
+    .map((file) => ({ source: file.path, bytes: file.bytes }))
+}
+
+/** CSV-capable base64 data URIs in text files; fixtures must never be inlined this way. */
+export function collectCsvDataUris(files: readonly BuildFile[]): CsvPayload[] {
   const payloads: CsvPayload[] = []
   const decoder = new TextDecoder('latin1')
   for (const file of files) {
-    if (hasExtension(file.path, [CSV_EXTENSION])) {
-      payloads.push({ source: file.path, bytes: file.bytes })
-      continue
-    }
     if (!hasExtension(file.path, TEXT_EXTENSIONS)) continue
     let uriIndex = 0
     for (const match of decoder.decode(file.bytes).matchAll(BASE64_DATA_URI)) {
@@ -95,15 +98,20 @@ export function collectCsvPayloads(files: readonly BuildFile[]): CsvPayload[] {
 }
 
 /**
- * The build may contain exactly the demo fixtures: every CSV payload must be byte-identical to a fixture,
- * every fixture must be present, and no fixture header may appear inlined in a text file
+ * The build may contain exactly the demo fixtures as standalone CSV files: every CSV file must be
+ * byte-identical to a fixture, every fixture must be present, no CSV may be inlined as a data URI
+ * (Vite is configured not to), and no fixture header may appear inlined in a text file
  * (that would mean CSV content was bundled as a string, e.g. via `?raw`).
  */
 export function checkDist(files: readonly BuildFile[], fixtures: readonly BuildFile[]): DistCheckResult {
   const problems: string[] = []
   if (fixtures.length === 0) problems.push('No fixtures to compare against.')
 
-  const payloads = collectCsvPayloads(files)
+  for (const dataUri of collectCsvDataUris(files)) {
+    problems.push(`${dataUri.source}: CSV inlined as a data URI; CSVs must be emitted as files.`)
+  }
+
+  const payloads = collectCsvFiles(files)
   for (const payload of payloads) {
     if (!fixtures.some((fixture) => bytesEqual(fixture.bytes, payload.bytes))) {
       problems.push(`${payload.source}: CSV content does not match any demo fixture.`)

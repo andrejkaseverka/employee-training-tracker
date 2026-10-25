@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { checkDist, collectCsvPayloads, headerLine, type BuildFile } from '../scripts/dist-check/dist-check.ts'
+import { checkDist, collectCsvDataUris, headerLine, type BuildFile } from '../scripts/dist-check/dist-check.ts'
 import { FIXTURES } from './load-fixtures.ts'
 
 const fixtures: BuildFile[] = FIXTURES.map((name) => ({
@@ -37,9 +37,12 @@ describe('checkDist', () => {
     expect(result).toEqual({ ok: true, payloadCount: 4, problems: [] })
   })
 
-  it('passes when the fixtures are inlined as base64 data URIs', () => {
+  it('fails when the fixtures are inlined as base64 data URIs instead of files', () => {
     const uris = fixtures.map((fixture) => `"${dataUri(fixture.bytes)}"`).join(',')
-    expect(checkDist([INDEX_HTML, jsWith(uris)], fixtures).ok).toBe(true)
+    const result = checkDist([INDEX_HTML, jsWith(uris)], fixtures)
+    expect(result.ok).toBe(false)
+    expect(result.payloadCount).toBe(0)
+    expect(result.problems).toContain('assets/chunk.js (data URI #1): CSV inlined as a data URI; CSVs must be emitted as files.')
   })
 
   it('fails when a CSV file differs from every fixture', () => {
@@ -55,7 +58,7 @@ describe('checkDist', () => {
     const extra = encoder.encode('a;b\n1;2\n')
     const result = checkDist([INDEX_HTML, ...asFiles(), jsWith(`"${dataUri(extra, 'application/octet-stream')}"`)], fixtures)
     expect(result.ok).toBe(false)
-    expect(result.payloadCount).toBe(5)
+    expect(result.problems).toEqual(['assets/chunk.js (data URI #1): CSV inlined as a data URI; CSVs must be emitted as files.'])
   })
 
   it('fails when no CSV is found at all', () => {
@@ -78,11 +81,11 @@ describe('checkDist', () => {
   })
 })
 
-describe('collectCsvPayloads', () => {
+describe('collectCsvDataUris', () => {
   it('ignores image and font data URIs', () => {
     const png = dataUri(new Uint8Array([1, 2, 3]), 'image/png')
     const font = dataUri(new Uint8Array([4, 5, 6]), 'font/woff2')
-    expect(collectCsvPayloads([{ path: 'assets/index.css', bytes: encoder.encode(`url(${png}) url(${font})`) }])).toEqual([])
+    expect(collectCsvDataUris([{ path: 'assets/index.css', bytes: encoder.encode(`url(${png}) url(${font})`) }])).toEqual([])
   })
 })
 
