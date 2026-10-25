@@ -30,18 +30,21 @@ export function Table({
   head,
   children,
   stackBelowSm = false,
+  numericColumns = [],
 }: {
   readonly head: readonly string[]
   readonly children: ReactNode
   readonly stackBelowSm?: boolean
+  /** Column indexes whose header is right-aligned; their cells set `text-right` themselves. */
+  readonly numericColumns?: readonly number[]
 }): ReactElement {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-collapse text-sm tabular-nums">
         <thead className={stackBelowSm ? 'max-sm:sr-only' : undefined}>
           <tr className="border-b border-gray-300 text-left">
-            {head.map((title) => (
-              <th key={title} className="px-2 py-1 font-semibold">
+            {head.map((title, index) => (
+              <th key={title} className={`px-2 py-1 font-semibold ${numericColumns.includes(index) ? 'text-right' : ''}`}>
                 {title}
               </th>
             ))}
