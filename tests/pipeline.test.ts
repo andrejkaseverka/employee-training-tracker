@@ -1,20 +1,9 @@
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { evaluate, prepareData, readFiles } from '../src/app/run-analysis.ts'
+import { evaluate, prepareData } from '../src/app/run-analysis.ts'
 import { DEFAULT_CONFIG } from '../src/domain/config.ts'
+import { readFixtures } from './load-fixtures.ts'
 
-// Synthetic fixtures reproducing the export quirks: Windows-1250 + CRLF + multi-line field +
-// repeated header (completions), UTF-8 with BOM (employees, sessions), plain UTF-8 (catalog).
-const FIXTURES = ['absolvovana_skoleni.csv', 'zamestnanci.csv', 'katalog_skoleni.csv', 'terminy_skoleni.csv']
-
-const read = readFiles(
-  FIXTURES.map((name) => ({
-    name,
-    bytes: new Uint8Array(readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)))),
-  })),
-)
-if (!read.ok) throw new Error('Fixtures not recognised')
+const read = readFixtures()
 
 describe('pipeline on synthetic fixtures', () => {
   const { tables, structuralIssues } = read
