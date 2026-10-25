@@ -23,14 +23,18 @@ export function DataLoader(props: {
         <label className="flex flex-col text-sm">
           <span className="font-semibold">Nahrát 4 CSV exporty</span>
           <span className="text-xs text-gray-600">zaměstnanci, absolvovaná školení, katalog, termíny – najednou, v libovolném pořadí</span>
+          {/* Visually hidden: the browser's own picker shows English text ("Choose Files") in a Czech UI. */}
           <input
             type="file"
             multiple
             accept=".csv,text/csv"
             disabled={props.busy}
-            className="mt-1 text-sm"
+            className="peer sr-only"
             onChange={handleChange}
           />
+          <span className="mt-2 cursor-pointer self-start rounded border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
+            Vybrat soubory…
+          </span>
         </label>
         <button
           type="button"
