@@ -76,7 +76,7 @@ export const ISSUE_LABELS: Readonly<Record<IssueKind, string>> = {
   'excel-serial-date': 'Datum jako číslo z Excelu (převedeno)',
   'invalid-number': 'Neplatné číslo',
   'duplicate-employee-id': 'Duplicitní ID zaměstnance',
-  'unknown-status': 'Neznámý stav zaměstnance',
+  'unknown-status': 'Neznámý stav',
   'missing-department': 'Chybí útvar',
   'unknown-manager': 'Vedoucí není v seznamu zaměstnanců',
   'duplicate-training-code': 'Duplicitní kód školení',
