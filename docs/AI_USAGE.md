@@ -42,15 +42,22 @@ souhrnná čísla) a revizí každé větve před mergem.
 - Seznam „Co řešit“ řadil jinak, než říká zvolená priorita, a test toto chybné pořadí potvrzoval.
   Opraveno na sdílenou prioritu z domény, nový test na staré verzi padá. Závěrečná revize celého
   kódu našla stejnou chybu ještě v záložce Zaměstnanci; opraveno stejně.
-- AI nechala jako „k vědomí“ dvě věci, které jsem nepřijala: chyba výpočtu shodila celou stránku
-  a každá chyba se hlásila jako „soubory nelze načíst“. Teď je výpočet oddělený (nahrávání
-  funguje dál), chyby dat a chyby aplikace se rozlišují a do konzole nejde text chyby
-  (mohl by citovat data).
+- Revize našla dva problémy v ošetření chyb, ale AI je navrhla nechat neopravené („k vědomí“).
+  Nesouhlasila jsem, protože oba uživatele nechají bez pomoci:
+  1. Když spadl výpočet výsledků, zmizela celá stránka (bílá obrazovka) a nešlo ani nahrát
+     jiné soubory. Teď se chybová zpráva ukáže jen v části s výsledky a nahrávání funguje dál.
+  2. Při jakékoli chybě se zobrazilo „Soubory se nepodařilo načíst“, i když byla chyba
+     v aplikaci, ne v souborech. Teď hláška rozliší „soubory nelze přečíst“ a „chyba aplikace,
+     soubory jsou nejspíš v pořádku“.
+
+  Zároveň se do konzole prohlížeče zapisuje jen typ chyby, ne její text, protože text chyby
+  může obsahovat hodnoty z nahraných dat.
 
 **Péče o data a CI**
-- Při ověřování se ukázalo, že Vite vkládá malé CSV do JavaScriptu jako base64, takže prosté
-  hledání textu v buildu by únik dat nenašlo. Build teď CSV vydává jako samostatné soubory
-  a CI vyžaduje, aby každé CSV bylo bajtově shodné s demo fixturou.
+- Vite vkládá malé CSV do JavaScriptu jako base64, takže kontrola hledající v buildu text by
+  data přehlédla a prošla. CSV se teď vydávají jako samostatné soubory a CI dovolí v buildu jen
+  soubory bajtově shodné s demo fixturami. Je to pojistka proti omylu (commit jiného CSV, změna
+  konfigurace). Hlavní ochranou je, že původní data v repozitáři vůbec nejsou.
 - AI navrhla navíc kontrolu buildu proti hodnotám z původních dat. Odmítla jsem ji: nasazuje se
   jen build z CI, kde původní data vůbec nejsou, a kontrola by vyžadovala mít je u sebe.
 - Návrh CodeRabbitu jsem nechala ověřit proti kódu: část byla zastaralá, oprávněnou část
