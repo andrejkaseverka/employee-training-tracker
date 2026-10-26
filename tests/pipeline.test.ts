@@ -80,6 +80,11 @@ describe('pipeline on synthetic fixtures', () => {
     expect(statusOf('D008')).toEqual({ 'BOZP-Z': 'valid', KYBER: 'valid', 'PRV-POM': 'missing' })
   })
 
+  it('orders each employee\'s trainings by the shared urgency: missing before expired', () => {
+    const codes = overview.employees.find((entry) => entry.employee.id === 'D002')?.trainings.map((t) => t.code)
+    expect(codes).toEqual(['PRV-POM', 'KYBER', 'BOZP-Z'])
+  })
+
   it('flags department-based trainings that cannot be decided', () => {
     const noDepartment = overview.employees.find((entry) => entry.employee.id === 'D004')
     expect(noDepartment?.flags).toMatchObject({ missingDepartment: true, onParentalLeave: true })

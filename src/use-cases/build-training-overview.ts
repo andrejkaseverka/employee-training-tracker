@@ -2,6 +2,7 @@ import { requirementFor } from '../domain/catalog.ts'
 import type { Completion, ValiditySource } from '../domain/completion.ts'
 import type { LocalDate } from '../domain/config.ts'
 import { overviewScope, type Employee } from '../domain/employee.ts'
+import { STATUS_PRIORITY } from '../domain/enrolment.ts'
 import {
   evaluateStatus,
   pickEffectiveCompletion,
@@ -123,9 +124,16 @@ function groupCompletions(completions: readonly Completion[]): Map<string, Compl
   return grouped
 }
 
-/** Status order from TRAINING_STATUSES, then fewest days left. */
+/** Valid trainings come after every status that needs action. */
+const VALID_RANK = Math.max(...Object.values(STATUS_PRIORITY)) + 1
+
+function urgencyRank(status: TrainingStatus): number {
+  return status === 'valid' ? VALID_RANK : STATUS_PRIORITY[status]
+}
+
+/** Shared urgency order (assumption #18), then fewest days left. */
 function byUrgency(a: TrainingStatusRow, b: TrainingStatusRow): number {
-  const byStatus = TRAINING_STATUSES.indexOf(a.status) - TRAINING_STATUSES.indexOf(b.status)
+  const byStatus = urgencyRank(a.status) - urgencyRank(b.status)
   if (byStatus !== 0) return byStatus
   return (a.daysLeft ?? Number.POSITIVE_INFINITY) - (b.daysLeft ?? Number.POSITIVE_INFINITY) || a.code.localeCompare(b.code)
 }

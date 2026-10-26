@@ -8,6 +8,11 @@ machine. The demo button loads a small synthetic dataset from `tests/fixtures/`.
 
 **Live app:** https://andrejkaseverka.github.io/employee-training-tracker/
 
+Submission documents (in Czech): [docs/SUBMISSION.md](docs/SUBMISSION.md) – what was built and
+why, findings about the data, assumptions, what was left out, next steps;
+[docs/AI_USAGE.md](docs/AI_USAGE.md) – how AI tools were used and where their output had to be
+corrected.
+
 ## Run locally
 
 Requires Node.js 24+.
